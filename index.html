@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Meta tags -->
+    <meta charset="UTF-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <!-- HEAD tags -->
+    <title>Contacts</title>
+
+    <!-- Local StyleSheets -->
+    <link rel="stylesheet" href="./css/index.css" />
+    <link rel="stylesheet" href="./assets/css/jquery.mobile-1.4.5.min.css" />
+
+    <!-- Local JavaScripts -->
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="./assets/js/jquery.min.js"></script>
+    <script
+      type="text/javascript"
+      src="./assets/js/jquery.mobile-1.4.5.min.js"
+    ></script>
+
+    <!-- Remote StyleSheets -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="logo">
+      <h1 class="logo-text">Contacts</h1>
+    </div>
+    <div class="add-contacts">
+      <label for="user-input" id="user-input-label">Name:</label>
+      <input type="text" name="user-input" id="user-input" value="" />
+
+      <label for="mobile-input" id="mobile-input-label">Mobile number:</label>
+      <input type="text" name="mobile-input" id="mobile-input" value="" />
+
+      <button class="ui-btn" id="add">Add Contact</button>
+    </div>
+    <br /><br />
+    <center>
+      <div
+        class="show-contacts"
+        style="
+          width: 90%;
+          height: 500px;
+          border-radius: 5px;
+          background-color: #cecece;
+          margin: auto;
+          overflow: scroll;
+          padding: 10px;
+        "
+      >
+        <div id="contacts-container">
+          <ul id="contacts-container-list">
+            <!-- <li>
+              Contact Name: XXX | Mobile Number: XXX
+              <a onclick="DeleteTask(event)"
+                ><span class="glyphicon glyphicon-remove remove"></span
+              ></a>
+            </li> -->
+          </ul>
+        </div>
+      </div>
+    </center>
+    <script type="text/javascript" src="./js/index.js"></script>
+  </body>
+</html>
