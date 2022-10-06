@@ -3,6 +3,7 @@ var user_input;
 var mobile_input;
 var contactsPanelList = document.getElementById("contacts-container-list");
 var db = null;
+var removeE;
 
 var contacts_obj = [];
 var contacts = [];
@@ -11,46 +12,46 @@ function deviceReady() {
   // Debug
   alert("Working!");
 
-  // SQLITE DB
-  db = window.sqlitePlugin.openDatabase({
-    name: "contacts.db",
-    location: "default",
-  });
-
   // Function calls
+  manageContacts();
   addContact();
 }
 
 function manageContacts() {
-  db.transaction(
-    function (tx) {
-      tx.executeSql(
-        "SELECT contacts FROM code",
-        [],
-        function (tx, rs) {
-          // loadContacts(rs.rows.item(0).contacts);
-          console.log(rs.rows.item(0).c);
-        },
-        function (tx, error) {
-          tx.executeSql("CREATE TABLE IF NOT EXISTS code (c)");
-          tx.executeSql("INSERT INTO code VALUES (0)");
+  getContactsObj();
+  getContacts();
+  setTimeout(loadContacts, 500);
+}
 
-          return false;
-        }
-      );
+function getContactsObj() {
+  NativeStorage.getItem(
+    "con_o",
+    (data) => {
+      contacts_obj = data;
+      console.log("Saved contacts objects found and imported");
     },
-    function (error) {
-      console.log("Transaction ERROR: " + error.message);
+    () => {
+      contacts_obj = [];
+      console.log("No saved contacts objects found");
+    }
+  );
+}
+
+function getContacts() {
+  NativeStorage.getItem(
+    "con",
+    (data) => {
+      contacts = data;
+      console.log("Saved contacts found and imported");
     },
-    function () {
-      console.log("Populated db OK");
+    () => {
+      contacts = [];
+      console.log("No saved contacts found");
     }
   );
 }
 
 function addContact() {
-  manageContacts();
-
   $("#add").click(function () {
     user_input = $("#user-input").val();
     mobile_input = $("#mobile-input").val();
@@ -67,9 +68,10 @@ function addContact() {
       contacts_obj.push(new Contact(objName, user_input, mobile_input));
       createNewElement(objName, user_input, mobile_input);
 
-      db.transaction(function (tx) {
-        tx.executeSql("UPDATE code SET c=?", [contacts_obj]);
-      });
+      NativeStorage.setItem("con_o", contacts_obj);
+      NativeStorage.setItem("con", contacts);
+
+      console.log("A client has been added");
     } else {
       let contacts_length = contacts.length;
       let contacts_last_index = contacts_length - 1;
@@ -81,9 +83,10 @@ function addContact() {
       contacts_obj.push(new Contact(objName, user_input, mobile_input));
       createNewElement(objName, user_input, mobile_input);
 
-      db.transaction(function (tx) {
-        tx.executeSql("UPDATE code SET c=?", [contacts_obj]);
-      });
+      NativeStorage.setItem("con_o", contacts_obj);
+      NativeStorage.setItem("con", contacts);
+
+      console.log("A client has been added");
     }
   });
 }
@@ -93,9 +96,9 @@ function createNewElement(cID, cName, cNumber) {
   contactsPanelList.insertAdjacentHTML("afterbegin", element);
 }
 
-function loadContacts(obj) {
-  obj.forEach((e) => {
-    element = `<li id="${obj.contact_identifier}">Contact Name: ${obj.contact_name} | Mobile Number: ${obj.contact_number} <a onclick="DeleteTask(event)"><span class="glyphicon glyphicon-remove remove"></span></a></li>`;
+function loadContacts() {
+  contacts_obj.forEach((obj) => {
+    element = `<li id="${obj.identifier}">Contact Name: ${obj.contact_name} | Mobile Number: ${obj.contact_number} <a onclick="DeleteTask(event)"><span class="glyphicon glyphicon-remove remove"></span></a></li>`;
     contactsPanelList.insertAdjacentHTML("afterbegin", element);
   });
 }
@@ -105,21 +108,33 @@ function DeleteTask(event) {
 
   contacts_obj.forEach((e) => {
     if (e.identifier == $(element).parent().parent().attr("id")) {
-      var removeE = [e.identifier];
+      let id = e.identifier.indexOf("_");
+      id = e.identifier.substr(e.identifier.indexOf("_") + 1);
+
+      removeE = [parseInt(id)];
+
       cordova.plugins.notification.local.schedule({
         title: "Contacts",
-        text: `${
-          $(e.contact_name).parent().parent().id
-        } contact has been deleted`,
+        text: `${e.contact_name} contact has been deleted`,
         foreground: true,
       });
-    }
-  });
 
-  contacts_obj = contacts_obj.filter((item) => !removeE.includes(item));
-  $(element).parent().parent().remove();
-  db.transaction(function (tx) {
-    tx.executeSql("UPDATE code SET c=?", [contacts_obj]);
+      $(element).parent().parent().remove();
+      contacts_obj = contacts_obj.filter((item) => !removeE.includes(item));
+
+      const indexOfObject = contacts_obj.findIndex((object) => {
+        return object.identifier == e.identifier;
+      });
+
+      contacts_obj.splice(indexOfObject, 1);
+
+      contacts = contacts.filter((item) => !removeE.includes(item));
+
+      NativeStorage.setItem("con_o", contacts_obj);
+      NativeStorage.setItem("con", contacts);
+
+      console.log(`${e.contact_name} contact has been deleted`);
+    }
   });
 }
 
